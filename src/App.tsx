@@ -15,7 +15,7 @@ export default function App() {
 
     try {
       // Using Random Words API 
-      const response = await fetch('https://random-word-api.herokuapp.com/word');
+      const response = await fetch('https://random-word-api.vercel.app/api?words=1');
 
       if (!response.ok) {
         throw new Error('Failed to fetch word');
@@ -84,7 +84,7 @@ export default function App() {
               <img
                 src={isGiftOpen ? "open.png" : "close.png"}
                 alt="Gift"
-                className="w-20 h-20 object-contain transition-transform duration-300"
+                className="w-30 h-30 object-contain transition-transform duration-300"
               />
             </div>
           </div>

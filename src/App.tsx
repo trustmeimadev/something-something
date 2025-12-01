@@ -7,6 +7,8 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [isGiftOpen, setIsGiftOpen] = useState(false);
+  const [wordCount, setWordCount] = useState<number>(1);
+  const [generatedWords, setGeneratedWords] = useState<string[]>([]);
 
   const fetchRandomAdjective = async () => {
     setIsLoading(true);
@@ -15,7 +17,7 @@ export default function App() {
 
     try {
       // Using Random Words API 
-      const response = await fetch('https://random-word-api.vercel.app/api?words=1');
+      const response = await fetch(`https://random-word-api.vercel.app/api?words=${wordCount}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch word');
@@ -24,6 +26,7 @@ export default function App() {
       const data: string[] = await response.json();
 
       if (data && data.length > 0) {
+        setGeneratedWords(data);
         setCurrentWord(data[0]);
       } else {
         throw new Error('No word data received');
@@ -37,6 +40,7 @@ export default function App() {
 
       const randomFallback = fallbackWords[Math.floor(Math.random() * fallbackWords.length)];
       setCurrentWord(randomFallback);
+      setGeneratedWords([randomFallback]);
     } finally {
       setIsLoading(false);
       setTimeout(() => setIsAnimating(false), 500);
@@ -99,17 +103,57 @@ export default function App() {
 
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-6 border-2 border-yellow-200">
           <div className="mb-8">
-            <div className="flex items-center justify-center gap-3 mb-6 flex-wrap">
-              <span className="text-4xl sm:text-5xl font-light text-gray-400">Something</span>
-              <div className={`transition-all duration-500 ${isAnimating ? 'scale-110 opacity-0' : 'scale-100 opacity-100'}`}>
-                {isLoading ? (
-                  <Loader2 className="w-12 h-12 text-yellow-600 animate-spin" />
-                ) : (
-                  <span className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
-                    {currentWord || '___'}
-                  </span>
-                )}
+            {/* Word Count Selection */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Number of words to generate:
+              </label>
+              <div className="flex gap-2 justify-center flex-wrap">
+                {[1, 3, 5, 10].map((count) => (
+                  <button
+                    key={count}
+                    onClick={() => setWordCount(count)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${wordCount === count
+                        ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                  >
+                    {count} {count === 1 ? 'word' : 'words'}
+                  </button>
+                ))}
               </div>
+            </div>
+
+            {/* Generated Words Display */}
+            <div className="mb-6">
+              {generatedWords.length > 1 ? (
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-gray-600 mb-2">Generated words:</p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {generatedWords.map((word, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-gradient-to-r from-yellow-100 to-orange-100 text-gray-800 rounded-full text-sm font-medium"
+                      >
+                        {word}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-3 mb-6 flex-wrap">
+                  <span className="text-4xl sm:text-5xl font-light text-gray-400">Something</span>
+                  <div className={`transition-all duration-500 ${isAnimating ? 'scale-110 opacity-0' : 'scale-100 opacity-100'}`}>
+                    {isLoading ? (
+                      <Loader2 className="w-12 h-12 text-yellow-600 animate-spin" />
+                    ) : (
+                      <span className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+                        {currentWord || '___'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {error && (
@@ -127,7 +171,7 @@ export default function App() {
               disabled={isLoading}
               className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-4 rounded-xl font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Generating...' : 'Generate New Word'}
+              {isLoading ? 'Generating...' : 'Generate New Words'}
             </button>
 
             <div className="text-center text-xs text-gray-400 pt-2">
@@ -141,7 +185,7 @@ export default function App() {
           <p className="text-xs">
             Powered by{' '}
             <a
-              href="https://random-word-api.herokuapp.com/"
+              href="https://random-word-api.vercel.app/api?words=1"
               target="_blank"
               rel="noopener noreferrer"
               className="text-yellow-600 hover:text-yellow-700 underline"
